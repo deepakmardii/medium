@@ -13,7 +13,7 @@ const app = new Hono();
 
 app.post("/api/v1/signup", (c) => {
   const prisma = new PrismaClient({
-    datasourceUrl: env.DATABASE_URL,
+    datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate());
   return c.text("signup route");
 });
