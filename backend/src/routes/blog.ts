@@ -55,8 +55,27 @@ blogRouter.put("/", async (c) => {
   });
 });
 
-blogRouter.get("/", (c) => {
-  return c.text("get blog route");
+blogRouter.get("/", async (c) => {
+  const body = await c.req.json();
+
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate());
+
+  try {
+    const blog = await prisma.blog.findFirst({
+      where: {
+        id: body.id,
+      },
+    });
+
+    return c.json({
+      blog,
+    });
+  } catch (e) {
+    c.status(411);
+    return c.json("Error while fetching blog post");
+  }
 });
 
 blogRouter.get("/bulk", (c) => {
