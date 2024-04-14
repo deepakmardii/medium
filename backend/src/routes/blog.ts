@@ -1,17 +1,34 @@
 import { Hono } from "hono";
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
+import { verify } from "hono/jwt";
 
 export const blogRouter = new Hono<{
   Bindings: {
     DATABASE_URL: string;
     JWT_SECRET: string;
   };
+  Variables: {
+    userId: string;
+  };
 }>();
 
-// blogRouter.use('/*',(c,next)=>{
-//   next()
-// })
+blogRouter.use("/*", async (c, next) => {
+  // loggedin or not => extract userID
+  // pass it down to route handler
+
+  const authHeader = c.req.header("Authorization") || "";
+  const user = await verify(authHeader, c.env.JWT_SECRET);
+  if (user) {
+    c.set("userId", user.id);
+    next();
+  } else {
+    c.status(403);
+    return c.json({
+      message: "You are not logged in",
+    });
+  }
+});
 
 blogRouter.post("/", async (c) => {
   const body = await c.req.json();
