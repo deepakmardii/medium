@@ -18,11 +18,18 @@ blogRouter.use("/*", async (c, next) => {
   // pass it down to route handler
 
   const authHeader = c.req.header("Authorization") || "";
-  const user = await verify(authHeader, c.env.JWT_SECRET);
-  if (user) {
-    c.set("userId", user.id);
-    await next();
-  } else {
+  try {
+    const user = await verify(authHeader, c.env.JWT_SECRET);
+    if (user) {
+      c.set("userId", user.id);
+      await next();
+    } else {
+      c.status(403);
+      return c.json({
+        message: "You are not logged in",
+      });
+    }
+  } catch (e) {
     c.status(403);
     return c.json({
       message: "You are not logged in",
