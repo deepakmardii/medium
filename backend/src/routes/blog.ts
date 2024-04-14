@@ -78,6 +78,16 @@ blogRouter.get("/", async (c) => {
   }
 });
 
+//TODO : pagination
+
 blogRouter.get("/bulk", (c) => {
-  return c.text("get blog route");
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate());
+
+  const blogs = prisma.blog.findMany();
+
+  return c.json({
+    blogs,
+  });
 });
